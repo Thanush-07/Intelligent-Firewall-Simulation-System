@@ -1,37 +1,16 @@
-Description :
+# React + Vite
 
-This project simulates the working of a packet-filtering firewall that monitors network traffic, applies customizable security rules, and blocks suspicious packets.
-It mimics how modern firewalls inspect traffic based on:
-•	Source IP
-•	Destination IP
-•	Port numbers
-•	Network protocols
-The simulation generates synthetic packets and processes them through a rule engine, providing real-time decisions (ALLOW/BLOCK) along with detailed logging.
-This helps cybersecurity learners understand how rule-based firewalls work without requiring admin access or sniffing real traffic.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-This project is a Firewall Simulation System implemented using Python.
-It generates synthetic network packets, applies firewall rules stored in JSON, and logs blocked packets.
-A React-based dashboard can display and download logs, providing a graphical monitoring interface.
+Currently, two official plugins are available:
 
-Tech Stack :
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-Frontend
-React.js – For dashboard UI to display firewall logs and allow log download.
+## React Compiler
 
-Backend
-Python (Flask / FastAPI) – Runs the firewall simulation, applies rules, and provides API for logs.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-Python Modules
-•	random – Generates fake network packets
+## Expanding the ESLint configuration
 
-•	json – Loads firewall rules
-
-•	time – Simulates real-time traffic delay
-
-•	datetime – Adds timestamps to logs
-
-•	os – Ensures log folder creation
-
-Storage
-
-Local Files – Logs stored in logs/simulation_log.txt, rules in rules.json.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
