@@ -1,0 +1,8 @@
+! This is simple firewall simulatiion system requirements file
+
+python-dateutil==2.8.2
+Flask==2.3.2
+python json 
+python os
+python datetime
+python random
