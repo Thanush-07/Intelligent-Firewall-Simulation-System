@@ -15,7 +15,7 @@ with open('rules.json' ,'r') as file :
 # write the logs in log file in the directory
 Path('logs/firewall_log.txt').touch(exist_ok=True)
 
-# simulate the packets for firewall  system
+# simulate the packets for firewall  systemm
 def generate_packet():
     packet = {
     protocols =['TCP','UDP','ICMP'],
