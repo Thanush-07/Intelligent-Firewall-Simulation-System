@@ -3,9 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Firewall Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <p>Welcome to the Intelligent Firewall Simulation System</p>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <h1 class="welcome-title">
+            <i class="fas fa-shield-alt"></i> Welcome to Firewall Dashboard
+        </h1>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+                   <a href="/download/all" class="logout-btn">
+    <i class="fas fa-download"></i> Download All Logs
+</a>
+        </div>
+        
+ 
+
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Total Allowed</h3>
+            <div class="stat-number" id="allowed-count">0</div>
+            <i class="fas fa-check-circle stat-icon" style="color: green;"></i>
+        </div>
+        <div class="stat-card">
+            <h3>Total Blocked</h3>
+            <div class="stat-number" id="blocked-count" style="color: red;">0</div>
+            <i class="fas fa-ban stat-icon" style="color: red;"></i>
+        </div>
+        <div class="stat-card">
+            <h3>System Status</h3>
+            <div class="stat-number">Active</div>
+            <i class="fas fa-heartbeat stat-icon" style="color: green;"></i>
+        </div>
+    </div>
+
+    <!-- Allowed Logs -->
+    <div class="section">
+        <h2>
+            <i class="fas fa-check-double" style="color: green;"></i>
+            Allowed Traffic
+            <span class="badge success" id="allowed-badge">0 logs</span>
+        </h2>
+        <div class="log-box allowed" id="allowed-logs">
+            <p class="empty-state">No allowed traffic logged yet.</p>
+        </div>
+    </div>
+
+    <!-- Blocked Logs -->
+    <div class="section">
+        <h2>
+            <i class="fas fa-times-circle" style="color: red;"></i>
+            Blocked Traffic
+            <span class="badge danger" id="blocked-badge">0 logs</span>
+        </h2>
+        <div class="log-box blocked" id="blocked-logs">
+            <p class="empty-state">No blocked traffic detected. You're secure!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Theme Toggle
+    function toggleTheme() {
+        const body = document.body;
+        const currentTheme = body.getAttribute('data-theme');
+        const icon = document.querySelector('.theme-toggle i');
+
+        if (currentTheme === 'dark') {
+            body.removeAttribute('data-theme');
+            icon.classList.replace('fa-sun', 'fa-moon');
+            localStorage.setItem('theme', 'light');
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Load saved theme
+    window.onload = () => {
+        const savedTheme = localStorage.getItem('theme');
+        const icon = document.querySelector('.theme-toggle i');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        // Start fetching logs
+        fetchLogs();
+        setInterval(fetchLogs, 1000); // update every 1 second
+    };
+
+    // Fetch logs from Flask backend
+    function fetchLogs() {
+        fetch('/get_logs')
+        .then(response => response.json())
+        .then(data => {
+            // Update counts
+            document.getElementById('allowed-count').innerText = data.allowed.length;
+            document.getElementById('blocked-count').innerText = data.blocked.length;
+            document.getElementById('allowed-badge').innerText = data.allowed.length + " logs";
+            document.getElementById('blocked-badge').innerText = data.blocked.length + " logs";
+
+            // Update log boxes
+            const allowedDiv = document.getElementById('allowed-logs');
+            const blockedDiv = document.getElementById('blocked-logs');
+
+            if (data.allowed.length > 0) {
+                allowedDiv.innerHTML = data.allowed.map(line => `<div class="log-entry">${line}</div>`).join('');
+            } else {
+                allowedDiv.innerHTML = '<p class="empty-state">No allowed traffic logged yet.</p>';
+            }
+
+            if (data.blocked.length > 0) {
+                blockedDiv.innerHTML = data.blocked.map(line => `<div class="log-entry">${line}</div>`).join('');
+            } else {
+                blockedDiv.innerHTML = '<p class="empty-state">No blocked traffic detected. You\'re secure!</p>';
+            }
+
+            // Auto scroll to bottom
+            allowedDiv.scrollTop = allowedDiv.scrollHeight;
+            blockedDiv.scrollTop = blockedDiv.scrollHeight;
+        })
+        .catch(err => console.error(err));
+    }
+</script>
+
 </body>
 </html>
