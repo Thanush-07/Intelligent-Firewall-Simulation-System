@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,21 +46,13 @@
         }
 
         [data-theme="light"] body {
-            background: linear-gradient(-45deg, #e0eafc, #f8f9fa, #cfdef3, #e9ecef);
+             background: linear-gradient(-45deg, #e0eafc, #f8f9fa, #cfdef3, #e9ecef);
         }
 
         @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         #particles {
@@ -87,23 +78,10 @@
         }
 
         @keyframes float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-                opacity: 0;
-            }
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
         }
 
         .login-card {
@@ -293,9 +271,7 @@
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
         .error-msg {
@@ -310,21 +286,9 @@
         }
 
         @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            20%,
-            60% {
-                transform: translateX(-5px);
-            }
-
-            40%,
-            80% {
-                transform: translateX(5px);
-            }
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
         }
 
         .footer {
@@ -338,14 +302,12 @@
                 margin: 20px;
                 padding: 30px 25px;
             }
-
             .login-card h2 {
                 font-size: 1.6rem;
             }
         }
     </style>
 </head>
-
 <body>
 
     <div id="particles"></div>
@@ -366,8 +328,7 @@
 
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" name="password" id="password" placeholder="Password" required
-                    autocomplete="current-password">
+                <input type="password" name="password" id="password" placeholder="Password" required autocomplete="current-password">
                 <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
             </div>
 
@@ -380,9 +341,9 @@
             </div>
 
             {% if error %}
-            <div class="error-msg">
-                <i class="fas fa-exclamation-triangle"></i> {{ error }}
-            </div>
+                <div class="error-msg">
+                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                </div>
             {% endif %}
 
             <button type="submit" class="login-btn" id="loginBtn">
@@ -409,7 +370,7 @@
                 localStorage.setItem('theme', 'light');
             }
         }
-        function forgotPassword() {
+       function forgotPassword() {
             alert("Password recovery is in progress.");
         }
         window.onload = () => {
@@ -434,7 +395,7 @@
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             const btn = document.getElementById('loginBtn');
             btn.classList.add('loading');
             btn.disabled = true;
@@ -456,5 +417,4 @@
         }
     </script>
 </body>
-
 </html>

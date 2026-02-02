@@ -1,146 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firewall Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-   <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
-<div class="container">
-    <!-- Header -->
-    <header>
-        <h1 class="welcome-title">
-            <i class="fas fa-shield-alt"></i> Welcome to Firewall Dashboard
-        </h1>
-        <div class="header-actions">
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <i class="fas fa-moon"></i>
-            </button>
-            <a href="/logout" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-                   <a href="/download/all" class="logout-btn">
-    <i class="fas fa-download"></i> Download All Logs
-</a>
-        </div>
-        
- 
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1 class="welcome-title">
+                <i class="fas fa-shield-alt"></i> Firewall Real-Time Monitor
+                <span id="live-indicator"
+                    style="font-size: 0.7rem; background: #34a853; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 10px; vertical-align: middle; animation: pulse 2s infinite;">LIVE</span>
+            </h1>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                <a href="/download/all" class="logout-btn">
+                    <i class="fas fa-download"></i> Download All Logs
+                </a>
+            </div>
+        </header>
 
-    </header>
+        <!-- Connectivity Alert (Hidden by default) -->
+        <div id="port-warning" class="section"
+            style="display: none; background: rgba(234, 67, 53, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: var(--danger); margin: 0;"><i class="fas fa-exclamation-triangle"></i> Connectivity
+                Warning</h3>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem;">It looks like you are accessing the dashboard via Port
+                5500. Please use <strong><a href="http://127.0.0.1:5000/index"
+                        style="color: var(--primary);">http://127.0.0.1:5000/index</a></strong> instead.</p>
+        </div>
 
-    <!-- Stats -->
-    <div class="stats">
-        <div class="stat-card">
-            <h3>Total Allowed</h3>
-            <div class="stat-number" id="allowed-count">0</div>
-            <i class="fas fa-check-circle stat-icon" style="color: green;"></i>
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Allowed</h3>
+                <div class="stat-number" id="allowed-count">0</div>
+                <i class="fas fa-check-circle stat-icon" style="color: green;"></i>
+            </div>
+            <div class="stat-card">
+                <h3>Total Blocked</h3>
+                <div class="stat-number" id="blocked-count" style="color: red;">0</div>
+                <i class="fas fa-ban stat-icon" style="color: red;"></i>
+            </div>
+            <div class="stat-card">
+                <h3>System Status</h3>
+                <div class="stat-number" id="system-status">Connected</div>
+                <i class="fas fa-heartbeat stat-icon" id="heartbeat-icon" style="color: green;"></i>
+            </div>
         </div>
-        <div class="stat-card">
-            <h3>Total Blocked</h3>
-            <div class="stat-number" id="blocked-count" style="color: red;">0</div>
-            <i class="fas fa-ban stat-icon" style="color: red;"></i>
+        <div style="text-align: right; font-size: 0.7rem; color: #777; margin-bottom: 20px; margin-top: -10px;">
+            Last Sync: <span id="last-sync">Never</span>
         </div>
-        <div class="stat-card">
-            <h3>System Status</h3>
-            <div class="stat-number">Active</div>
-            <i class="fas fa-heartbeat stat-icon" style="color: green;"></i>
+
+        <!-- Active Blocked Ports & Rules -->
+        <div class="section">
+            <h2>
+                <i class="fas fa-shield-virus" style="color: #f39c12;"></i>
+                Firewall Security Rules
+            </h2>
+            <div class="stats"
+                style="margin-top: 15px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px;">
+
+                <div style="width: 100%;">
+                    <h4
+                        style="font-size: 0.9rem; color: #777; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-door-closed" style="color: var(--danger);"></i> Blocked Network Ports
+                    </h4>
+                    <div id="blocked-ports-list"
+                        style="display: flex; gap: 10px; flex-wrap: wrap; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                        <!-- Will be populated by JS -->
+                        <span class="badge danger">Loading rules...</span>
+                    </div>
+                </div>
+
+                <div style="width: 100%; border-top: 1px solid var(--border); padding-top: 20px;">
+                    <h4
+                        style="font-size: 0.9rem; color: #777; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-project-diagram" style="color: #1a73e8;"></i> Blocked Traffic Protocols
+                    </h4>
+                    <div id="blocked-protocols-list"
+                        style="display: flex; gap: 10px; flex-wrap: wrap; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                        <!-- Will be populated by JS -->
+                        <span class="badge danger">Loading rules...</span>
+                    </div>
+                </div>
+
+                <div style="width: 100%; border-top: 1px solid var(--border); padding-top: 20px;">
+                    <h4
+                        style="font-size: 0.9rem; color: #777; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-user-slash" style="color: #ea4335;"></i> Blocked IP Addresses
+                    </h4>
+                    <div id="blocked-ips-list"
+                        style="display: flex; gap: 10px; flex-wrap: wrap; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 8px; max-height: 100px; overflow-y: auto;">
+                        <!-- Will be populated by JS -->
+                        <span class="badge danger">Loading rules...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Allowed Logs -->
+        <div class="section">
+            <h2>
+                <i class="fas fa-check-double" style="color: green;"></i>
+                Allowed Traffic
+                <span class="badge success" id="allowed-badge">0 logs</span>
+            </h2>
+            <div class="log-box allowed" id="allowed-logs">
+                <p class="empty-state">No allowed traffic logged yet.</p>
+            </div>
+        </div>
+
+        <!-- Blocked Logs -->
+        <div class="section">
+            <h2>
+                <i class="fas fa-times-circle" style="color: red;"></i>
+                Blocked Traffic
+                <span class="badge danger" id="blocked-badge">0 logs</span>
+            </h2>
+            <div class="log-box blocked" id="blocked-logs">
+                <p class="empty-state">No blocked traffic detected. You're secure!</p>
+            </div>
         </div>
     </div>
 
-    <!-- Allowed Logs -->
-    <div class="section">
-        <h2>
-            <i class="fas fa-check-double" style="color: green;"></i>
-            Allowed Traffic
-            <span class="badge success" id="allowed-badge">0 logs</span>
-        </h2>
-        <div class="log-box allowed" id="allowed-logs">
-            <p class="empty-state">No allowed traffic logged yet.</p>
-        </div>
-    </div>
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const icon = document.querySelector('.theme-toggle i');
 
-    <!-- Blocked Logs -->
-    <div class="section">
-        <h2>
-            <i class="fas fa-times-circle" style="color: red;"></i>
-            Blocked Traffic
-            <span class="badge danger" id="blocked-badge">0 logs</span>
-        </h2>
-        <div class="log-box blocked" id="blocked-logs">
-            <p class="empty-state">No blocked traffic detected. You're secure!</p>
-        </div>
-    </div>
-</div>
-
-<script>
-    // Theme Toggle
-    function toggleTheme() {
-        const body = document.body;
-        const currentTheme = body.getAttribute('data-theme');
-        const icon = document.querySelector('.theme-toggle i');
-
-        if (currentTheme === 'dark') {
-            body.removeAttribute('data-theme');
-            icon.classList.replace('fa-sun', 'fa-moon');
-            localStorage.setItem('theme', 'light');
-        } else {
-            body.setAttribute('data-theme', 'dark');
-            icon.classList.replace('fa-moon', 'fa-sun');
-            localStorage.setItem('theme', 'dark');
-        }
-    }
-
-    // Load saved theme
-    window.onload = () => {
-        const savedTheme = localStorage.getItem('theme');
-        const icon = document.querySelector('.theme-toggle i');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            icon.classList.replace('fa-moon', 'fa-sun');
-        }
-
-        // Start fetching logs
-        fetchLogs();
-        setInterval(fetchLogs, 1000); // update every 1 second
-    };
-
-    // Fetch logs from Flask backend
-    function fetchLogs() {
-        fetch('/get_logs')
-        .then(response => response.json())
-        .then(data => {
-            // Update counts
-            document.getElementById('allowed-count').innerText = data.allowed.length;
-            document.getElementById('blocked-count').innerText = data.blocked.length;
-            document.getElementById('allowed-badge').innerText = data.allowed.length + " logs";
-            document.getElementById('blocked-badge').innerText = data.blocked.length + " logs";
-
-            // Update log boxes
-            const allowedDiv = document.getElementById('allowed-logs');
-            const blockedDiv = document.getElementById('blocked-logs');
-
-            if (data.allowed.length > 0) {
-                allowedDiv.innerHTML = data.allowed.map(line => `<div class="log-entry">${line}</div>`).join('');
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
             } else {
-                allowedDiv.innerHTML = '<p class="empty-state">No allowed traffic logged yet.</p>';
+                body.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Connectivity Check
+        if (window.location.port === "5500") {
+            document.getElementById('port-warning').style.display = 'block';
+        }
+
+        // Cache the log containers to avoid repeatedly querying the DOM
+        const allowedDiv = document.getElementById('allowed-logs');
+        const blockedDiv = document.getElementById('blocked-logs');
+        const allowedCountEl = document.getElementById('allowed-count');
+        const blockedCountEl = document.getElementById('blocked-count');
+        const allowedBadgeEl = document.getElementById('allowed-badge');
+        const blockedBadgeEl = document.getElementById('blocked-badge');
+        const blockedPortsEl = document.getElementById('blocked-ports-list');
+        const blockedProtocolsEl = document.getElementById('blocked-protocols-list');
+        const blockedIpsEl = document.getElementById('blocked-ips-list');
+
+        // Universal API target for both Flask (5000) and Live Server (5500)
+        const getApiUrl = (endpoint) => {
+            const base = window.location.port === "5500" ? "http://127.0.0.1:5000" : "";
+            // Add cache-buster to ensure data is always fresh
+            const cb = "?cb=" + new Date().getTime();
+            return base + endpoint + cb;
+        };
+
+        let lastAllowedHash = '';
+        let lastBlockedHash = '';
+
+        // Load saved theme
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('theme');
+            const icon = document.querySelector('.theme-toggle i');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
             }
 
-            if (data.blocked.length > 0) {
-                blockedDiv.innerHTML = data.blocked.map(line => `<div class="log-entry">${line}</div>`).join('');
-            } else {
-                blockedDiv.innerHTML = '<p class="empty-state">No blocked traffic detected. You\'re secure!</p>';
-            }
+            // Start fetching logs
+            fetchLogs();
+            setInterval(fetchLogs, 1000); // update every 1 second
+        };
 
-            // Auto scroll to bottom
-            allowedDiv.scrollTop = allowedDiv.scrollHeight;
-            blockedDiv.scrollTop = blockedDiv.scrollHeight;
-        })
-        .catch(err => console.error(err));
-    }
-</script>
+        // Simple hash function to detect content changes
+        function getHash(arr) {
+            return JSON.stringify(arr);
+        }
+
+        // Fetch logs from Flask backend
+        function fetchLogs() {
+            fetch(getApiUrl('/get_logs'))
+                .then(response => {
+                    if (!response.ok) throw new Error('Refresh port');
+                    return response.json();
+                })
+                .then(data => {
+                    // Update counts always (fast)
+                    allowedCountEl.innerText = data.total_allowed;
+                    blockedCountEl.innerText = data.total_blocked;
+                    allowedBadgeEl.innerText = data.allowed.length + " recent logs";
+                    blockedBadgeEl.innerText = data.blocked.length + " recent logs";
+
+                    // Update Rules
+                    if (data.rules) {
+                        blockedPortsEl.innerHTML = data.rules.blocked_ports.map(p => `
+                            <span class="badge danger" style="padding: 6px 12px; border-radius: 6px; font-family: monospace;">
+                                <i class="fas fa-lock"></i> ${p}
+                            </span>
+                        `).join('') || '<span class="badge success">All Ports Open</span>';
+
+                        blockedProtocolsEl.innerHTML = data.rules.blocked_protocols.map(p => `
+                            <span class="badge info" style="padding: 6px 12px; border-radius: 6px; background: #e8f0fe; color: #1967d2; border: 1px solid #d2e3fc;">
+                                <i class="fas fa-code-branch"></i> ${p}
+                            </span>
+                        `).join('') || '<span class="badge success">All Protocols Allowed</span>';
+
+                        blockedIpsEl.innerHTML = data.rules.blocked_ip.map(ip => `
+                            <span class="badge" style="padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--border); color: var(--text); background: var(--input-bg);">
+                                <i class="fas fa-ban" style="font-size: 0.6rem; color: var(--danger)"></i> ${ip}
+                            </span>
+                        `).join('') || '<span class="badge success">No Blocked IPs</span>';
+                    }
+
+                    // Update log boxes only if content changed
+                    const currentAllowedHash = getHash(data.allowed);
+                    if (currentAllowedHash !== lastAllowedHash) {
+                        if (data.allowed.length > 0) {
+                            allowedDiv.innerHTML = data.allowed.map(line => `<div class="log-entry">${line}</div>`).join('');
+                        } else {
+                            allowedDiv.innerHTML = '<p class="empty-state">No allowed traffic logged yet.</p>';
+                        }
+                        lastAllowedHash = currentAllowedHash;
+                        allowedDiv.scrollTop = allowedDiv.scrollHeight;
+                    }
+
+                    const currentBlockedHash = getHash(data.blocked);
+                    if (currentBlockedHash !== lastBlockedHash) {
+                        if (data.blocked.length > 0) {
+                            blockedDiv.innerHTML = data.blocked.map(line => `<div class="log-entry">${line}</div>`).join('');
+                        } else {
+                            blockedDiv.innerHTML = '<p class="empty-state">No blocked traffic detected. You\'re secure!</p>';
+                        }
+                        lastBlockedHash = currentBlockedHash;
+                        blockedDiv.scrollTop = blockedDiv.scrollHeight;
+                    }
+
+                    // Update sync time
+                    document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
+                    document.getElementById('system-status').innerText = "Connected";
+                    document.getElementById('system-status').style.color = "inherit";
+                    document.getElementById('heartbeat-icon').style.color = "green";
+                    document.getElementById('live-indicator').style.background = "#34a853";
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    document.getElementById('system-status').innerText = "Disconnected";
+                    document.getElementById('system-status').style.color = "var(--danger)";
+                    document.getElementById('heartbeat-icon').style.color = "var(--danger)";
+                    document.getElementById('live-indicator').style.background = "#ea4335";
+
+                    if (window.location.port !== "5000") {
+                        document.getElementById('port-warning').style.display = 'block';
+                    }
+                });
+        }
+    </script>
 
 </body>
+
 </html>
